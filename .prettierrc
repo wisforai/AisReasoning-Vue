@@ -1,0 +1,5 @@
+{
+  "printWidth": 200, // 适当增加行宽限制
+  "singleQuote": true,
+  "jsxBracketSameLine": true
+}

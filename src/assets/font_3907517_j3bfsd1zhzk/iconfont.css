@@ -1,0 +1,19 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 3907517 */
+  src: url('iconfont.woff2?t=1683051456323') format('woff2'),
+       url('iconfont.woff?t=1683051456323') format('woff'),
+       url('iconfont.ttf?t=1683051456323') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-excel:before {
+  content: "\e665";
+}
+
