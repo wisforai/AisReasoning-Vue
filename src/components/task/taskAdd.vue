@@ -7,14 +7,14 @@
       <el-form-item label="任务描述:" prop="taskDescription">
         <el-input v-model="form.taskDescription" placeholder="请输入任务描述" style="width: 300px"></el-input>
       </el-form-item>
-      <el-form-item label="任务数据:" prop="selectDataSource">
+      <el-form-item v-if="changeOrAdd === 0" label="任务数据:" prop="selectDataSource">
         <el-cascader v-model="form.selectDataSource" :options="dataSourceNames" style="width: 300px" placeholder="请选择数据源" :show-all-levels="true" />
       </el-form-item>
       <el-form-item v-show="isImage" label="结果地址:" prop="resultUrl">
         <el-input v-model="form.resultUrl" placeholder="请输入图片算法推理结果上传地址,未输入则为默认服务器" style="width: 300px" :autosize="{ minRows: 2, maxRows: 6 }" type="textarea"></el-input>
       </el-form-item>
-      <el-form-item v-show="isStream" label="推流地址:" prop="pushStream">
-        <el-input v-model="form.pushStream" placeholder="请输入视频流算法结果推流地址,未输入则为默认服务器" style="width: 300px" :autosize="{ minRows: 2, maxRows: 6 }" type="textarea"></el-input>
+      <el-form-item v-show="isStream" label="推流地址:" prop="pushStreamUrl">
+        <el-input v-model="form.pushStreamUrl" placeholder="请输入视频流算法结果推流地址,未输入则为默认服务器" style="width: 300px" :autosize="{ minRows: 2, maxRows: 6 }" type="textarea"></el-input>
       </el-form-item>
       <div class="flex-container" style="width: 100%; align-items: center; justify-content: center">
         <el-form-item v-show="isStream" label="是否显示置信度:" prop="drawScore" style="width: 35%">
@@ -36,7 +36,7 @@
           <el-switch v-model="form.drawCount"></el-switch>
         </el-form-item>
       </div>
-      <el-form-item label="模型/服务:" prop="selectProcessType">
+      <el-form-item v-if="changeOrAdd === 0" label="模型/服务:" prop="selectProcessType">
         <el-cascader v-model="form.selectProcessType" :options="processTypeNames" style="width: 300px" placeholder="请选择模型/服务" :show-all-levels="true" />
       </el-form-item>
     </el-form>
@@ -62,8 +62,20 @@ export default {
       processTypeList();
       console.log(props.changeOrAdd);
       if (props.changeOrAdd === 1) {
+        state.form.taskUuid = props.curTask.taskUuid;
         state.form.taskName = props.curTask.taskName;
+        state.form.streamUrl = props.curTask.streamUrl;
         state.form.taskDescription = props.curTask.taskDescription;
+        state.form.sourceType = props.curTask.sourceType;
+        state.form.pushStreamUrl = props.curTask.pushStreamUrl;
+
+        state.form.sampleRatio = props.curTask.sampleRatio;
+        state.form.enableTrack = props.curTask.enableTrack;
+        state.form.enableCount = props.curTask.enableCount;
+
+        state.form.drawCategory = props.curTask.drawCategory;
+        state.form.drawScore = props.curTask.drawScore;
+        state.form.drawCount = props.curTask.drawCount;
         // 回显数据源
         state.form.selectDataSource = [props.curTask.sourceType, props.curTask.sourceUuid];
         // 回显模型/服务
@@ -77,10 +89,12 @@ export default {
       streamData: [],
       form: {
         taskName: null,
+        taskUuid: null,
+        sourceType: null,
         taskDescription: null,
         selectDataSource: null,
         resultUrl: null,
-        pushStream: null,
+        pushStreamUrl: null,
         enableTrack: false,
         sampleRatio: 0.5,
         drawScore: true,

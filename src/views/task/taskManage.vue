@@ -1,5 +1,5 @@
 <template>
-  <div class="page-box">
+  <div class="page-box" v-loading="mainBoxLoading">
     <div class="title-box flex-row" style="justify-content: space-between">
       <mySmallTitle text="处理任务" font-size="20"></mySmallTitle>
       <div class="flex-row">
@@ -40,7 +40,13 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="任务状态" prop="taskStatus"></el-table-column>
+          <el-table-column label="任务状态" prop="taskStatus">
+            <template v-slot="scope">
+              <span :style="{ color: scope.row.taskStatus === '运行完成' ? 'green' : 'red' }">
+                {{ scope.row.taskStatus }}
+              </span>
+            </template>
+          </el-table-column>
           <el-table-column label="任务创建时间" prop="taskCreateTime"></el-table-column>
           <el-table-column label="操作" width="250" align="center">
             <template #default="scope">
@@ -129,71 +135,12 @@ export default {
           label: "工业相机",
         },
       ],
-      taskStatusOptions: ["运行中", "运行完成", "异常", "未开始"],
-      // taskData: [],
-      taskData: [
-        {
-          taskName: "任务 1",
-          taskDescription: "这是任务 1 的描述",
-          dataSource: "image",
-          taskStatus: "未开始",
-          taskCreateTime: "2023-01-01 10:00:00",
-          taskUuid: "uuid-1",
-          imageName: "图片名称 1",
-        },
-        {
-          taskName: "任务 2",
-          taskDescription: "这是任务 2 的描述",
-          dataSource: "image",
-          taskStatus: "运行完成",
-          taskCreateTime: "2023-01-02 11:00:00",
-          taskUuid: "uuid-2",
-          imageName: "图片名称 2",
-        },
-        {
-          taskName: "任务 3",
-          taskDescription: "这是任务 3 的描述",
-          dataSource: "image",
-          taskStatus: "运行中",
-          taskCreateTime: "2023-01-03 12:00:00",
-          taskUuid: "uuid-3",
-          imageName: "图片名称 3",
-        },
-        {
-          taskName: "任务 4",
-          taskDescription: "这是任务 4 的描述",
-          dataSource: "stream",
-          dataSourceName: "数据源4",
-          taskStatus: "运行完成",
-          taskCreateTime: "2023-01-04 13:00:00",
-          taskUuid: "uuid-4",
-          streamName: "流名称 4",
-        },
-        {
-          taskName: "任务 5",
-          taskDescription: "这是任务 5 的描述",
-          dataSource: "stream",
-          dataSourceName: "数据源1",
-          taskStatus: "未开始",
-          taskCreateTime: "2023-01-05 14:00:00",
-          taskUuid: "uuid-5",
-          streamName: "流名称 5",
-        },
-        {
-          taskName: "任务 6",
-          taskDescription: "这是任务 6 的描述",
-          dataSource: "stream",
-          dataSourceName: "数据源1",
-          taskStatus: "运行中",
-          taskCreateTime: "2023-01-05 14:00:00",
-          taskUuid: "uuid-5",
-          streamName: "流名称 5",
-        },
-        // 可以添加更多假数据
-      ],
+      taskStatusOptions: ["运行中", "运行完成", "运行异常", "未开始"],
+      taskData: [],
       changeOrAdd: 0,
       curTask: null,
       curDstUrl: null,
+      mainBoxLoading: false,
       taskAddDialogVisible: false, // 控制服务新增dialog
       streamLookDialogVisible: false, //控制查看视频流dialog
       imageViewDialogVisible: false, // 控制查看图片dialog
@@ -229,27 +176,28 @@ export default {
       init();
     };
     const look = (row) => {
-      state.imageViewDialogVisible = true;
-      // getData.taskLook(row.taskUuid).then((res) => {
-      //   console.log(res);
-      //   if (res.data.code === 200) {
-      //     state.curDstUrl = res.data.data.dstUrl;
-      //     console.log(state.curDstUrl);
-      //     state.streamLookDialogVisible = true;
-      //     // ElMessage.success(res.data.msg);
-      //   } else {
-      //     ElMessage.error(res.data.msg);
-      //   }
-      // });
+      // state.imageViewDialogVisible = true;
+      getData.taskLook(row.taskUuid).then((res) => {
+        console.log(res);
+        if (res.data.code === 200) {
+          state.curDstUrl = res.data.data.dstUrl;
+          console.log(state.curDstUrl);
+          state.streamLookDialogVisible = true;
+          // ElMessage.success(res.data.msg);
+        } else {
+          ElMessage.error(res.data.msg);
+        }
+      });
     };
     const enableLook = (row) => {
-      if (row.dataSource === "image") {
+      if (row.sourceType === "image") {
         return row.taskStatus === "运行完成";
-      } else if (row.dataSource === "stream") {
+      } else if (row.sourceType === "stream") {
         return row.taskStatus === "运行中";
       }
     };
     const start = (row) => {
+      state.mainBoxLoading = true;
       getData.taskStart(row.taskUuid).then((res) => {
         console.log(res);
         if (res.data.code === 200) {
@@ -258,12 +206,13 @@ export default {
         } else {
           ElMessage.error(res.data.msg);
         }
+        state.mainBoxLoading = false;
       });
     };
     const enableStart = (row) => {
-      if (row.dataSource === "image") {
+      if (row.sourceType === "image") {
         return row.taskStatus === "未开始";
-      } else if (row.dataSource === "stream") {
+      } else if (row.sourceType === "stream") {
         return row.taskStatus === "未开始" || row.taskStatus === "运行完成";
       }
     };
@@ -273,14 +222,14 @@ export default {
       state.taskAddDialogVisible = true;
     };
     const enableChange = (row) => {
-      if (row.dataSource === "image") {
+      if (row.sourceType === "image") {
         return row.taskStatus === "未开始" || row.taskStatus === "运行完成";
-      } else if (row.dataSource === "stream") {
+      } else if (row.sourceType === "stream") {
         return row.taskStatus === "未开始" || row.taskStatus === "运行完成";
       }
     };
     const stop = (row) => {
-      if (row.dataSource === "image") {
+      if (row.sourceType === "image") {
         ElMessageBox.confirm("当前任务尚未分析完成，是否确认停止", "提示", {
           confirmButtonText: "确认",
           cancelButtonText: "取消",
@@ -296,10 +245,22 @@ export default {
             }
           })
         );
+      } else if (row.sourceType === "stream") {
+        state.mainBoxLoading = true;
+        getData.taskStop(row.taskUuid).then((res) => {
+          console.log(res);
+          if (res.data.code === 200) {
+            init();
+            ElMessage.success(res.data.msg);
+          } else {
+            ElMessage.error(res.data.msg);
+          }
+          state.mainBoxLoading = false;
+        });
       }
     };
     const enableStop = (row) => {
-      return row.taskStatus === "运行中";
+      return row.taskStatus === "运行中" || row.taskStatus === "运行异常";
     };
     const del = (row) => {
       ElMessageBox.confirm("是否删除该任务", "提示", {

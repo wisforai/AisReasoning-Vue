@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-col" style="justfity-content: center; align-items: center">
+  <div class="flex-col" style="justfity-content: center; align-items: center" v-loading="mainBoxLoading">
     <el-form ref="myform" :model="form" :rules="rules" class="flex-form">
       <el-form-item label="名称:" prop="modelName">
         <el-input v-model="form.modelName" placeholder="请输入模型名称" style="width: 300px"></el-input>
@@ -60,6 +60,7 @@ export default {
       }
     });
     const state = reactive({
+      mainBoxLoading: false,
       modelTypes: ["目标检测", "实例分割", "旋转检测"],
       form: {
         modelUuid: null,
@@ -88,6 +89,7 @@ export default {
           // 调用 新增服务接口
           console.log(props.changeOrAdd);
           if (props.changeOrAdd === 0) {
+            state.mainBoxLoading = true;
             getData.modelAdd(state.form).then((res) => {
               console.log(state.form);
               console.log(res);
@@ -98,6 +100,8 @@ export default {
               } else {
                 ElMessage.error(res.data.msg);
               }
+
+              state.mainBoxLoading = false;
             });
           } else {
             state.form.modelUuid = props.curModel.modelUuid;
