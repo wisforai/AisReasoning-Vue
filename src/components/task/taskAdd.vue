@@ -8,10 +8,14 @@
         <el-input v-model="form.taskDescription" placeholder="请输入任务描述" style="width: 300px"></el-input>
       </el-form-item>
       <el-form-item v-if="changeOrAdd === 0" label="任务数据:" prop="selectDataSource">
-        <el-cascader v-model="form.selectDataSource" :options="dataSourceNames" style="width: 300px" placeholder="请选择数据源" :show-all-levels="true" />
+        <el-cascader v-model="form.selectDataSource" :options="dataSourceNames" style="width: 300px" placeholder="请选择数据源" :show-all-levels="true" @change="changeDataSource" />
       </el-form-item>
       <el-form-item v-show="isImage" label="结果地址:" prop="resultUrl">
         <el-input v-model="form.resultUrl" placeholder="请输入图片算法推理结果上传地址,未输入则为默认服务器" style="width: 300px" :autosize="{ minRows: 2, maxRows: 6 }" type="textarea"></el-input>
+      </el-form-item>
+
+      <el-form-item v-show="isStream" label="拉流地址:" prop="streamUrl">
+        <el-input v-model="form.streamUrl" style="width: 300px" :autosize="{ minRows: 1, maxRows: 3 }" type="textarea" readonly></el-input>
       </el-form-item>
       <el-form-item v-show="isStream" label="推流地址:" prop="pushStreamUrl">
         <el-input v-model="form.pushStreamUrl" placeholder="请输入视频流算法结果推流地址,未输入则为默认服务器" style="width: 300px" :autosize="{ minRows: 2, maxRows: 6 }" type="textarea"></el-input>
@@ -77,7 +81,7 @@ export default {
         state.form.drawScore = props.curTask.drawScore;
         state.form.drawCount = props.curTask.drawCount;
         // 回显数据源
-        state.form.selectDataSource = [props.curTask.sourceType, props.curTask.sourceUuid];
+        state.form.selectDataSource = [props.curTask.sourceType, props.curTask.sourceUuid, props.curTask.streamUrl];
         // 回显模型/服务
         state.form.selectProcessType = [props.curTask.taskProcessType, props.curTask.taskProcessUuid];
       }
@@ -89,11 +93,12 @@ export default {
       streamData: [],
       form: {
         taskName: null,
-        taskUuid: null,
+        // taskUuid: null,
         sourceType: null,
         taskDescription: null,
         selectDataSource: null,
         resultUrl: null,
+        streamUrl: null,
         pushStreamUrl: null,
         enableTrack: false,
         sampleRatio: 0.5,
@@ -144,6 +149,7 @@ export default {
       ],
       rules: {
         taskName: [{ required: true, message: "请输入任务名称", trigger: ["blur"] }],
+        streamUrl: [{ required: true, trigger: ["blur"] }],
         taskDescription: [{ required: true, message: "请输入任务名称", trigger: ["blur"] }],
         selectDataSource: [{ required: true, message: "请选择数据源", trigger: "blur" }],
         selectProcessType: [{ required: true, message: "请选择模型/服务", trigger: "blur" }],
@@ -171,10 +177,14 @@ export default {
         state.dataSourceNames[1].children = [];
         if (state.streamData.length > 0) {
           state.streamData.forEach((item) => {
-            state.dataSourceNames[1].children.push({
+            console.log(item);
+            let temp = {
               value: item.streamUuid,
               label: item.streamName,
-            });
+              streamUrl: item.streamUrl,
+            };
+            state.dataSourceNames[1].children.push(temp);
+            console.log(state.dataSourceNames);
           });
           state.dataSourceNames[1].disabled = false;
         }
@@ -287,6 +297,18 @@ export default {
       state.form.serviceName = null;
       state.form.selectDataSource = null;
     };
+    const changeDataSource = () => {
+      console.log(11111);
+      console.log(state.form.selectDataSource);
+      console.log(state.dataSourceNames[1].children);
+      for (let item of state.dataSourceNames[1].children) {
+        if (item.value === state.form.selectDataSource[1]) {
+          console.log(item.streamUrl);
+          state.form.streamUrl = item.streamUrl;
+          break;
+        }
+      }
+    };
     return {
       ...toRefs(state),
       myform,
@@ -298,6 +320,7 @@ export default {
       handleCountChange,
       add,
       cancel,
+      changeDataSource,
     };
   },
 };
