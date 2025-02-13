@@ -39,7 +39,11 @@
               {{ getDataSourceName(scope.row) }}
             </template>
           </el-table-column>
-
+          <el-table-column label="任务结果" prop="taskResultUrl">
+            <template #default="scope">
+              {{ getTaskResultUrl(scope.row) }}
+            </template>
+          </el-table-column>
           <el-table-column label="任务状态" prop="taskStatus">
             <template v-slot="scope">
               <span :style="{ color: scope.row.taskStatus === '运行完成' ? 'green' : 'red' }">
@@ -157,6 +161,11 @@ export default {
     const getDataSourceName = (row) => {
       // 返回存在的字段
       return row.streamName || row.imageName || row.cameraName || "无数据";
+    };
+
+    const getTaskResultUrl = (row) => {
+      // 返回存在的字段
+      return row.pushStreamUrl || "无数据";
     };
     const filtersClear = () => {
       state.filters = {
@@ -326,6 +335,7 @@ export default {
       streamLookDialogClose,
       imageViewDialogClose,
       getDataSourceName,
+      getTaskResultUrl,
     };
   },
 };

@@ -1,28 +1,26 @@
 <template>
   <div>
-    <video ref="videoElement" controls autoplay style="width: 100%; height: 100%;"></video>
+    <video class="video-box" ref="videoElement" controls autoplay style="width: 100%; height: 100%; object-fit: cover; background: black"></video>
   </div>
 </template>
 
 <script>
-import { onMounted, onUnmounted, ref,toRefs,reactive   } from 'vue';
-import flvjs from 'flv.js';
+import { onMounted, onUnmounted, ref, toRefs, reactive } from "vue";
+import flvjs from "flv.js";
 
 export default {
-  props:['curDstUrl'],
-  setup(props, context){
+  props: ["curDstUrl"],
+  setup(props, context) {
     const videoElement = ref(null);
     let player = null;
-    const state = reactive({
-
-    })
+    const state = reactive({});
     onMounted(() => {
-      console.log(videoElement)
-      console.log(props.curDstUrl)
+      console.log(videoElement);
+      console.log(props.curDstUrl);
       if (flvjs.isSupported()) {
         player = flvjs.createPlayer({
-          type: 'flv',
-          url: props.curDstUrl
+          type: "flv",
+          url: props.curDstUrl,
         });
         player.attachMediaElement(videoElement.value);
         player.load();
@@ -40,12 +38,13 @@ export default {
         player = null;
       }
     });
-    return{
-      ...toRefs(state),videoElement,player
-    }
-  }
-}
+    return {
+      ...toRefs(state),
+      videoElement,
+      player,
+    };
+  },
+};
 </script>
 
-<style lang="sass" scoped>
-</style>
+<style lang="scss" scoped></style>
